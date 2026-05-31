@@ -77,7 +77,16 @@ const builtServicesPath = path.join(outputDir, 'services.js');
 if (await pathExists(builtServicesPath)) {
   if (dictionaryManifestUrl) {
     const servicesSource = await readFile(builtServicesPath, 'utf8');
-    const patchedServices = servicesSource.replace(/__DICTIONARY_MANIFEST_URL__/g, dictionaryManifestUrl);
+    const placeholderDeclaration = "const DICTIONARY_MANIFEST_PLACEHOLDER = '__DICTIONARY_MANIFEST_URL__';";
+    const patchedServices = servicesSource.replace(
+      placeholderDeclaration,
+      `const DICTIONARY_MANIFEST_PLACEHOLDER = ${JSON.stringify(dictionaryManifestUrl)};`
+    );
+
+    if (patchedServices === servicesSource) {
+      throw new Error('Failed to inject DICTIONARY_MANIFEST_URL: placeholder declaration was not found.');
+    }
+
     await writeFile(builtServicesPath, patchedServices, 'utf8');
     console.log('[build] Injected dictionary manifest URL from DICTIONARY_MANIFEST_URL');
   } else {
