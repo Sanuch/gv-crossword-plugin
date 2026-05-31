@@ -31,14 +31,14 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://godville.net/news", "https://godvillegame.com/news", "https://b.godville.net/news"],
+      "matches": ["https://godville.net/news", "https://godvillegame.com/news", "https://b.godville.net/news", "https://a.godville.net/news"],
       "js": ["contentScript.js"]
     }
   ],
   "web_accessible_resources": [
     {
       "resources": ["popup-modal.css", "popup-modal.js", "modal.js", "services.js"],
-      "matches": ["https://godville.net/*", "https://godvillegame.com/*", "https://b.godville.net/*"]
+      "matches": ["https://godville.net/*", "https://godvillegame.com/*", "https://b.godville.net/*", "https://a.godville.net/*"]
     }
   ]
 }
