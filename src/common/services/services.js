@@ -171,7 +171,9 @@ class GitHubDictionaryProvider {
   }
 
   normalizeForMatch(value) {
-    return this.normalizeText(value).replace(/[\s\-–—]/g, '');
+    // В некоторых кроссвордах пробелы между словами занимают отдельные ячейки.
+    // Поэтому сохраняем пробелы как позиционные символы и нормализуем только дефисы.
+    return this.normalizeText(value).replace(/[\-–—]/g, ' ');
   }
 
   selectDictionaries(languageManifest, clue) {
