@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crossword Solver</title>
+  <style>
+    body {
+      width: 600px;
+      min-height: 400px;
+      margin: 0;
+      padding: 15px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    
+    h1 {
+      margin: 0 0 15px 0;
+      font-size: 18px;
+      color: #333;
+    }
+    
+    .control-panel {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 15px;
+      padding: 10px;
+      background: #f5f5f5;
+      border-radius: 6px;
+    }
+    
+    label {
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    
+    select {
+      flex: 1;
+      padding: 6px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    button {
+      padding: 8px 16px;
+      background: #007acc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    button:hover {
+      background: #005a9e;
+    }
+    
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+    #results {
+      max-height: 500px;
+      overflow-y: auto;
+    }
+    
+    .word-item {
+      margin-bottom: 12px;
+      padding: 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      background: #fafafa;
+    }
+    
+    .word-header {
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #333;
+    }
+    
+    .word-clue {
+      color: #666;
+      margin-bottom: 8px;
+      font-style: italic;
+    }
+    
+    .word-answers {
+      margin-top: 8px;
+    }
+    
+    .answer {
+      display: inline-block;
+      margin: 2px 4px 2px 0;
+      padding: 4px 8px;
+      background: #e8f4fd;
+      border: 1px solid #bee5eb;
+      border-radius: 4px;
+      font-family: monospace;
+      font-weight: 600;
+    }
+    
+    .answer.primary {
+      background: #d4edda;
+      border-color: #c3e6cb;
+      color: #155724;
+    }
+    
+    .answer.clickable {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .answer.clickable:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .answer.clickable:active {
+      transform: translateY(0);
+    }
+    
+    .answer.answer-active {
+      background: #28a745 !important;
+      color: white !important;
+      border-color: #1e7e34;
+    }
+    
+    .no-answers {
+      color: #dc3545;
+      font-style: italic;
+    }
+    
+    .stats {
+      margin-top: 15px;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      font-size: 13px;
+      border-left: 4px solid #007acc;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+    
+    .error {
+      color: #dc3545;
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      padding: 10px;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    
+    .cache-info {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      padding: 8px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧩 Crossword Solver</h1>
+  <div class="control-panel">
+    <label for="serviceSelect">Service:</label>
+    <select id="serviceSelect"></select>
+  <button id="solveBtn">🚀 Solve</button>
+  <button id="refreshBtn" title="Force re-request API and clear cache">🔄 Refresh</button>
+  <button id="clearBtn" title="Clear all editable cells">🧹 Clear</button>
+  </div>
+  <div id="results"></div>
+  <script src="services.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,248 @@
+/* Стили для модального всплывающего окна */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  backdrop-filter: blur(3px);
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  max-width: 90vw;
+  max-height: 90vh;
+  width: 800px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #e0e0e0;
+  background: linear-gradient(135deg, #007acc, #005a9e);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-control-panel {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.modal-control-panel label {
+  font-weight: 500;
+  color: #495057;
+  white-space: nowrap;
+}
+
+.modal-control-panel select {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+}
+
+.modal-control-panel button {
+  padding: 10px 20px;
+  background: #007acc;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.modal-control-panel button:hover {
+  background: #005a9e;
+}
+
+.modal-control-panel button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.modal-results {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.modal-word-item {
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s;
+}
+
+.modal-word-item:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.modal-word-header {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #212529;
+  font-size: 16px;
+}
+
+.modal-word-clue {
+  color: #6c757d;
+  margin-bottom: 12px;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.modal-word-answers {
+  margin-top: 12px;
+}
+
+.modal-answer {
+  display: inline-block;
+  margin: 3px 6px 3px 0;
+  padding: 6px 12px;
+  background: #e7f3ff;
+  border: 1px solid #b3d9ff;
+  border-radius: 6px;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.modal-answer:hover {
+  background: #cce7ff;
+  transform: translateY(-1px);
+}
+
+.modal-answer.primary {
+  background: #d4edda;
+  border-color: #c3e6cb;
+  color: #155724;
+}
+
+.modal-no-answers {
+  color: #dc3545;
+  font-style: italic;
+  font-weight: 500;
+}
+
+.modal-stats {
+  margin-top: 20px;
+  padding: 16px;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: 8px;
+  border-left: 4px solid #007acc;
+  font-size: 14px;
+}
+
+.modal-cache-info {
+  background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+  border: 1px solid #ffeaa7;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+  font-size: 16px;
+}
+
+.modal-error {
+  color: #dc3545;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  padding: 16px;
+  border-radius: 6px;
+  margin: 16px 0;
+}
+
+/* Анимации */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-content {
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95vw;
+    height: 95vh;
+  }
+  
+  .modal-control-panel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .modal-control-panel select,
+  .modal-control-panel button {
+    width: 100%;
+  }
+}

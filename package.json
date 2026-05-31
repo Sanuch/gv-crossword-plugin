@@ -1,0 +1,16 @@
+{
+  "name": "crossword-extension",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "package": "node scripts/package.mjs",
+    "build:chrome": "npm run build -- --target=chrome",
+    "build:firefox": "npm run build -- --target=firefox",
+    "package:chrome": "npm run package -- --target=chrome",
+    "package:firefox": "npm run package -- --target=firefox",
+    "lint": "echo \"No lint configured\"",
+    "test": "echo \"No tests configured\""
+  }
+}
