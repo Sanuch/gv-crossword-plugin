@@ -1,3 +1,8 @@
+const popupLogger =
+  typeof window !== 'undefined' && window.crosswordLogger
+    ? window.crosswordLogger.install({ context: 'popup' })
+    : null;
+
 // Система кеширования
 class CrosswordCache {
   constructor() {
@@ -457,6 +462,94 @@ async function solveCrossword(forceRefresh = false) {
   }
 }
 
+function formatLogFileName() {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  return `crossword-debug-logs-${timestamp}.json`;
+}
+
+function downloadTextFile(fileName, text) {
+  const blob = new Blob([text], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+
+  link.href = url;
+  link.download = fileName;
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function exportLogsForSharing() {
+  const exportBtn = document.getElementById('exportLogsBtn');
+  const providerName = document.getElementById('serviceSelect').value || null;
+  const cacheKey = await cache.getCacheKey();
+
+  try {
+    if (exportBtn) {
+      exportBtn.disabled = true;
+      exportBtn.textContent = '⏳ Exporting...';
+    }
+
+    const activeTabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    const activeTab = activeTabs && activeTabs.length > 0 ? {
+      id: activeTabs[0].id,
+      url: activeTabs[0].url,
+      title: activeTabs[0].title
+    } : null;
+
+    const payload = popupLogger
+      ? await popupLogger.exportSnapshot({
+          selectedProvider: providerName,
+          cacheKey,
+          activeTab
+        })
+      : {
+          generatedAt: new Date().toISOString(),
+          selectedProvider: providerName,
+          cacheKey,
+          activeTab,
+          logs: []
+        };
+
+    const payloadText = JSON.stringify(payload, null, 2);
+    downloadTextFile(formatLogFileName(), payloadText);
+
+    let copiedToClipboard = false;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(payloadText);
+        copiedToClipboard = true;
+      } catch {
+        copiedToClipboard = false;
+      }
+    }
+
+    const resultsDiv = document.getElementById('results');
+    const copyHint = copiedToClipboard
+      ? 'JSON was also copied to clipboard for quick sending.'
+      : 'Clipboard copy is unavailable in this context, use downloaded JSON file.';
+    resultsDiv.innerHTML = `<div class="cache-info">📤 Logs exported. ${copyHint}</div>`;
+
+    console.log('📤 Debug logs exported', {
+      selectedProvider: providerName,
+      cacheKey,
+      copiedToClipboard,
+      entries: Array.isArray(payload.logs) ? payload.logs.length : 0
+    });
+  } catch (error) {
+    console.error('❌ Failed to export debug logs:', error);
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = `<div class="error">❌ Failed to export logs: ${error.message}</div>`;
+  } finally {
+    if (exportBtn) {
+      exportBtn.disabled = false;
+      exportBtn.textContent = '📤 Logs';
+    }
+  }
+}
+
 // Кнопка Solve
 document.getElementById('solveBtn').addEventListener('click', () => solveCrossword(false));
 
@@ -492,6 +585,11 @@ if (clearBtn) {
       });
     });
   });
+}
+
+const exportLogsBtn = document.getElementById('exportLogsBtn');
+if (exportLogsBtn) {
+  exportLogsBtn.addEventListener('click', exportLogsForSharing);
 }
 
 function displayResults(crosswordData, apiResponse, metadata, language, providerName, fromCache, cacheKey) {

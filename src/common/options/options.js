@@ -1,3 +1,7 @@
+if (typeof window !== 'undefined' && window.crosswordLogger) {
+  window.crosswordLogger.install({ context: 'options' });
+}
+
 function renderList(services) {
   console.log('🎛️ Rendering services list with', services.length, 'services');
   const list = document.getElementById('serviceList');

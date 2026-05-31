@@ -63,6 +63,14 @@
       background: #ccc;
       cursor: not-allowed;
     }
+
+    button.secondary {
+      background: #5c6773;
+    }
+
+    button.secondary:hover {
+      background: #47515c;
+    }
     
     #results {
       max-height: 500px;
@@ -177,8 +185,10 @@
   <button id="solveBtn">🚀 Solve</button>
   <button id="refreshBtn" title="Force re-request API and clear cache">🔄 Refresh</button>
   <button id="clearBtn" title="Clear all editable cells">🧹 Clear</button>
+  <button id="exportLogsBtn" class="secondary" title="Download logs JSON for sharing">📤 Logs</button>
   </div>
   <div id="results"></div>
+  <script src="logger.js"></script>
   <script src="services.js"></script>
   <script src="popup.js"></script>
 </body>

@@ -1,3 +1,7 @@
+if (typeof window !== 'undefined' && window.crosswordLogger) {
+  window.crosswordLogger.install({ context: 'content-script' });
+}
+
 function extractCrossword(id = 'twl_wrap', options = {}) {
   const includeUserInputLetters = options.includeUserInputLetters === true;
   console.log('🔍 Extracting crossword from element with ID:', id);

@@ -44,6 +44,7 @@ await rm(outputDir, { recursive: true, force: true });
 await ensureDir(outputDir);
 
 const fileMap = [
+  { from: 'src/common/logging/logger.js', to: 'logger.js', required: true },
   { from: 'src/common/content/contentScript.js', to: 'contentScript.js', required: true },
   { from: 'src/common/popup/popup.html', to: 'popup.html', required: true },
   { from: 'src/common/popup/popup.js', to: 'popup.js', required: true },

@@ -31,7 +31,7 @@
   "content_scripts": [
     {
       "matches": ["https://godville.net/news", "https://godvillegame.com/news", "https://b.godville.net/news", "https://a.godville.net/news"],
-      "js": ["contentScript.js"]
+      "js": ["logger.js", "contentScript.js"]
     }
   ],
   "web_accessible_resources": [
