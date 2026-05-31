@@ -1,4 +1,5 @@
-function extractCrossword(id = 'twl_wrap') {
+function extractCrossword(id = 'twl_wrap', options = {}) {
+  const includeUserInputLetters = options.includeUserInputLetters === true;
   console.log('🔍 Extracting crossword from element with ID:', id);
   const container = document.getElementById(id);
   
@@ -61,7 +62,10 @@ function extractCrossword(id = 'twl_wrap') {
         const input = cell.querySelector('.sym');
         if (input) {
           inputId = input.id;
-          letter = input.value.trim() || '_';
+          const inputValue = input.value.trim();
+          // По умолчанию не фиксируем введенные в поля буквы,
+          // чтобы не сужать поиск случайными/устаревшими символами.
+          letter = includeUserInputLetters && inputValue ? inputValue : '_';
         }
       }
       
@@ -633,7 +637,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   
   if (msg.action === 'getCrossword') {
     console.log('🔍 Processing getCrossword request for ID:', msg.id);
-    const result = extractCrossword(msg.id);
+    const result = extractCrossword(msg.id, {
+      includeUserInputLetters: msg.includeUserInputLetters === true
+    });
     console.log('📦 Sending crossword data:', result);
     sendResponse(result);
   } else if (msg.action === 'fillCrossword') {

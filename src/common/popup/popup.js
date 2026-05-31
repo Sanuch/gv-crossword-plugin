@@ -138,7 +138,7 @@ async function loadServices() {
   return services;
 }
 
-async function fetchCrossword() {
+async function fetchCrossword(includeUserInputLetters = false) {
   console.log('🎯 Fetching crossword from active tab...');
   return new Promise(resolve => {
     chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
@@ -146,7 +146,11 @@ async function fetchCrossword() {
         url: tabs[0]?.url,
         id: tabs[0]?.id
       });
-      chrome.tabs.sendMessage(tabs[0].id, { action: 'getCrossword', id: 'twl_wrap' }, (response) => {
+      chrome.tabs.sendMessage(tabs[0].id, {
+        action: 'getCrossword',
+        id: 'twl_wrap',
+        includeUserInputLetters
+      }, (response) => {
         console.log('📦 Crossword data received:', response);
         resolve(response);
       });
