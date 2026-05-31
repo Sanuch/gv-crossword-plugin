@@ -13,6 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('🔍 Launching crossword solver...');
     chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
       chrome.tabs.sendMessage(tabs[0].id, { action: 'openModal' }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.warn('⚠️ Unable to reach content script for openModal:', chrome.runtime.lastError.message);
+          return;
+        }
         console.log('📝 Modal open response:', response);
         // Закрываем popup после успешной отправки
         setTimeout(() => {

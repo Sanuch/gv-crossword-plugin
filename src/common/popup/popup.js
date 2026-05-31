@@ -14,6 +14,11 @@ class CrosswordCache {
     return new Promise(resolve => {
       chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
         chrome.tabs.sendMessage(tabs[0].id, { action: 'getCacheKey' }, (response) => {
+          if (chrome.runtime.lastError) {
+            console.warn('⚠️ Unable to reach content script for cache key:', chrome.runtime.lastError.message);
+            resolve(null);
+            return;
+          }
           resolve(response?.cacheKey || null);
         });
       });
@@ -156,6 +161,11 @@ async function fetchCrossword(includeUserInputLetters = false) {
         id: 'twl_wrap',
         includeUserInputLetters
       }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.warn('⚠️ Unable to reach content script for crossword data:', chrome.runtime.lastError.message);
+          resolve(null);
+          return;
+        }
         console.log('📦 Crossword data received:', response);
         resolve(response);
       });
@@ -172,6 +182,11 @@ async function fillCrossword(apiResponse) {
         id: tabs[0]?.id
       });
       chrome.tabs.sendMessage(tabs[0].id, { action: 'fillCrossword', id: 'twl_wrap', words: apiResponse }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.warn('⚠️ Unable to reach content script for fillCrossword:', chrome.runtime.lastError.message);
+          resolve(null);
+          return;
+        }
         console.log('✅ Crossword filled:', response);
         resolve(response);
       });
@@ -196,6 +211,15 @@ async function fillSingleWord(wordId, answer, clickedElement) {
         wordId: wordId, 
         answer: answer 
       }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.warn('⚠️ Unable to reach content script for fillSingleWord:', chrome.runtime.lastError.message);
+
+          // Восстанавливаем визуал даже если сообщение не дошло
+          clickedElement.textContent = originalText;
+          clickedElement.style.opacity = '1';
+          resolve(null);
+          return;
+        }
         console.log('✅ Single word filled:', response);
         
         // Восстанавливаем визуал
@@ -568,6 +592,11 @@ if (clearBtn) {
     resultsDiv.innerHTML = '<div class="loading">🧹 Clearing cells...</div>';
     chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
       chrome.tabs.sendMessage(tabs[0].id, { action: 'clearCells', id: 'twl_wrap' }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.warn('⚠️ Unable to reach content script for clearCells:', chrome.runtime.lastError.message);
+          resultsDiv.innerHTML = '<div class="error">❌ Could not reach the crossword page. Open the crossword tab and try again.</div>';
+          return;
+        }
         console.log('🧹 Clear response:', response);
         if (!response) {
           resultsDiv.innerHTML = '<div class="error">❌ No response from page when clearing cells. Open the crossword tab and try again.</div>';
