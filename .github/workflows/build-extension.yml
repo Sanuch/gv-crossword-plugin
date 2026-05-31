@@ -1,6 +1,12 @@
 name: Build Extension
 
 on:
+  workflow_dispatch:
+    inputs:
+      dictionary_manifest_url:
+        description: Dictionary manifest URL for build-time injection
+        required: false
+        type: string
   pull_request:
   push:
     branches:
@@ -11,6 +17,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      DICTIONARY_MANIFEST_URL: ${{ github.event.inputs.dictionary_manifest_url || vars.DICTIONARY_MANIFEST_URL }}
     strategy:
       fail-fast: false
       matrix:

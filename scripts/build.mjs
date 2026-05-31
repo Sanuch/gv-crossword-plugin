@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { rm } from 'node:fs/promises';
+import { readFile, rm, writeFile } from 'node:fs/promises';
 import {
   copyDirectorySafe,
   copyFileSafe,
@@ -38,6 +38,7 @@ function parseTarget(argv) {
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const target = parseTarget(process.argv.slice(2));
 const outputDir = path.join(rootDir, 'dist', target);
+const dictionaryManifestUrl = process.env.DICTIONARY_MANIFEST_URL?.trim() || '';
 
 await rm(outputDir, { recursive: true, force: true });
 await ensureDir(outputDir);
@@ -70,6 +71,18 @@ for (const entry of fileMap) {
   }
 
   await copyFileSafe(sourcePath, targetPath);
+}
+
+const builtServicesPath = path.join(outputDir, 'services.js');
+if (await pathExists(builtServicesPath)) {
+  if (dictionaryManifestUrl) {
+    const servicesSource = await readFile(builtServicesPath, 'utf8');
+    const patchedServices = servicesSource.replace(/__DICTIONARY_MANIFEST_URL__/g, dictionaryManifestUrl);
+    await writeFile(builtServicesPath, patchedServices, 'utf8');
+    console.log('[build] Injected dictionary manifest URL from DICTIONARY_MANIFEST_URL');
+  } else {
+    console.warn('[build] DICTIONARY_MANIFEST_URL is not set. Manifest URL must be provided at runtime.');
+  }
 }
 
 const iconsSourcePath = path.join(rootDir, 'assets', 'icons');

@@ -1,5 +1,9 @@
 // Базовый класс для провайдеров
-const DEFAULT_DICTIONARY_MANIFEST_URL = 'https://raw.githubusercontent.com/oivashchenko/crossword_dict/main/manifest.json';
+const DICTIONARY_MANIFEST_PLACEHOLDER = '__DICTIONARY_MANIFEST_URL__';
+const DEFAULT_DICTIONARY_MANIFEST_URL =
+  DICTIONARY_MANIFEST_PLACEHOLDER === '__DICTIONARY_MANIFEST_URL__'
+    ? null
+    : DICTIONARY_MANIFEST_PLACEHOLDER;
 const DICTIONARY_CACHE_KEY = 'githubDictionaryCache';
 const DICTIONARY_MANIFEST_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_DICTIONARY_RESULTS = 25;
@@ -342,6 +346,9 @@ class GitHubDictionaryProvider extends CrosswordProvider {
 
   async loadManifest(forceRefresh = false) {
     const manifestUrl = await this.getManifestUrl();
+    if (!manifestUrl) {
+      throw new Error('Dictionary manifest URL is not configured. Set DICTIONARY_MANIFEST_URL during build, window.CROSSWORD_DICTIONARY_MANIFEST_URL, or chrome.storage.sync.dictionaryManifestUrl.');
+    }
     const cacheKey = `manifest:${manifestUrl}`;
     const cached = await this.cache.get(cacheKey);
     const now = Date.now();
