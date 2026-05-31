@@ -9,270 +9,7 @@ const DICTIONARY_MANIFEST_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_DICTIONARY_RESULTS = 25;
 const MAX_SOLVER_SEARCH_NODES = 50000;
 
-class CrosswordProvider {
-  constructor(name, endpoint) {
-    this.name = name;
-    this.endpoint = endpoint;
-  }
-
-  // Преобразование данных кроссворда в формат провайдера
-  async transformRequest(crosswordData, lang) {
-    return crosswordData.map(word => ({
-      id: word.id,
-      pattern: word.pattern,
-      clue: word.clue,
-      length: word.length
-    }));
-  }
-
-  // Преобразование ответа провайдера в стандартный формат
-  async transformResponse(response) {
-    return response;
-  }
-
-  async solve(crosswordData, lang) {
-    const transformedRequest = await this.transformRequest(crosswordData, lang);
-    console.log('📡 Sending transformed data to provider:', transformedRequest);
-
-    const response = await fetch(this.endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(transformedRequest)
-    });
-
-    console.log('📥 Response status:', response.status);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const rawResponse = await response.json();
-    console.log('📦 Raw provider response:', rawResponse);
-
-    const apiResponse = await this.transformResponse(rawResponse);
-    console.log('💡 Transformed response:', apiResponse);
-    return apiResponse;
-  }
-
-  // Получение описания форматов для пользовательского интерфейса
-  getFormatDescription() {
-    return {
-      request: `[
-  {
-    "id": "2г",
-    "pattern": "С__О___Л_",
-    "clue": "Монстр",
-    "length": 10
-  }
-]`,
-      response: `[
-  {
-    "id": "2г",
-    "pattern": "С__О___Л_",
-    "clue": "Монстр",
-    "length": 10,
-    "answers": ["СКОРПИОН"]
-  }
-]`
-    };
-  }
-}
-
-// Провайдер 1: CrosswordNinja
-class CrosswordNinjaProvider extends CrosswordProvider {
-  constructor() {
-    super('CrosswordNinja', 'https://api.crosswordninja.com/solve');
-  }
-
-  async transformRequest(crosswordData, lang = 'en') {
-      return {
-        lang: lang,
-        tasks: crosswordData.map(word => ({
-          id: word.id,
-          clue: word.clue,
-          pattern: word.pattern,
-          length: word.length
-        })),
-        force_refresh: false
-      };
-  }
-
-  async transformResponse(response) {
-    return response.map(result => ({
-      id: result.wordId,
-      pattern: result.template,
-      clue: result.hint,
-      length: result.template.length,
-      answers: result.suggestions || []
-    }));
-  }
-
-  getFormatDescription() {
-    return {
-      request: `{
-  "lang": "ru",
-  "tasks": [
-    {
-      "id": "2г",
-      "clue": "Монстр",
-      "pattern": "С__О___Л_",
-      "length": 10
-    }
-  ],
-  "force_refresh": false
-}`,
-      response: `[
-  {
-    "wordId": "2г",
-    "template": "С__О___Л_",
-    "hint": "Монстр",
-    "suggestions": ["СКОРПИОН"]
-  }
-]`
-    };
-  }
-}
-
-// Провайдер 2: WordSolver
-class WordSolverProvider extends CrosswordProvider {
-  constructor() {
-    super('WordSolver', 'https://api.wordsolver.com/crossword');
-  }
-
-  async transformRequest(crosswordData, lang = 'en') {
-    return {
-      language: lang,
-      puzzle: {
-        words: crosswordData.map(word => ({
-          position: word.id,
-          mask: word.pattern,
-          description: word.clue
-        }))
-      }
-    };
-  }
-
-  async transformResponse(response) {
-    return response.puzzle.words.map(word => ({
-      id: word.position,
-      pattern: word.mask,
-      clue: word.description,
-      length: word.mask.length,
-      answers: word.solutions || []
-    }));
-  }
-
-  getFormatDescription() {
-    return {
-      request: `{
-  "language": "ru",
-  "puzzle": {
-    "words": [
-      {
-        "position": "2г",
-        "mask": "С__О___Л_",
-        "description": "Монстр"
-      }
-    ]
-  }
-}`,
-      response: `{
-  "puzzle": {
-    "words": [
-      {
-        "position": "2г",
-        "mask": "С__О___Л_",
-        "description": "Монстр",
-        "solutions": ["СКОРПИОН"]
-      }
-    ]
-  }
-}`
-    };
-  }
-}
-
-// Провайдер 3: CrosswordSolver
-class CrosswordSolverProvider extends CrosswordProvider {
-  constructor() {
-    super('CrosswordSolver', 'https://api.crosswordsolver.org/v1/solve');
-  }
-
-  async transformRequest(crosswordData, lang = 'en') {
-    return {
-      language: lang,
-      crossword: {
-        entries: crosswordData.map(word => ({
-          reference: word.id,
-          pattern: word.pattern.replace(/_/g, '.'),
-          clue: word.clue,
-          size: word.length
-        }))
-      }
-    };
-  }
-
-  async transformResponse(response) {
-    return response.crossword.entries.map(entry => ({
-      id: entry.reference,
-      pattern: entry.pattern.replace(/\./g, '_'),
-      clue: entry.clue,
-      length: entry.size,
-      answers: entry.matches || []
-    }));
-  }
-
-  getFormatDescription() {
-    return {
-      request: `{
-  "language": "ru",
-  "crossword": {
-    "entries": [
-      {
-        "reference": "2г",
-        "pattern": "С..О...Л.",
-        "clue": "Монстр",
-        "size": 10
-      }
-    ]
-  }
-}`,
-      response: `{
-  "crossword": {
-    "entries": [
-      {
-        "reference": "2г",
-        "pattern": "С..О...Л.",
-        "clue": "Монстр",
-        "size": 10,
-        "matches": ["СКОРПИОН"]
-      }
-    ]
-  }
-}`
-    };
-  }
-}
-
-// Тестовый провайдер
-class TestProvider extends CrosswordProvider {
-  constructor() {
-    super('Test API', 'https://crossword.sanuch.name/crossword/solve');
-  }
-
-  async transformRequest(crosswordData, lang) {
-    return {
-      lang: lang,
-      tasks: crosswordData.map(word => ({
-        id: word.id,
-        clue: word.clue,
-        pattern: word.pattern,
-        length: word.length
-      })),
-      force_refresh: false
-    };
-  }
-}
+// Поддерживается только manifest-based источник словарей.
 
 class DictionaryCacheStore {
   async getCache() {
@@ -309,10 +46,46 @@ class DictionaryCacheStore {
   }
 }
 
-class GitHubDictionaryProvider extends CrosswordProvider {
+class GitHubDictionaryProvider {
   constructor() {
-    super('GitHub Dictionaries', DEFAULT_DICTIONARY_MANIFEST_URL);
+    this.name = 'GitHub Dictionaries';
+    this.endpoint = null;
     this.cache = new DictionaryCacheStore();
+  }
+
+  validateManifest(manifest, manifestUrl) {
+    if (!manifest || typeof manifest !== 'object') {
+      throw new Error(`Invalid dictionary manifest at ${manifestUrl}: manifest must be an object`);
+    }
+
+    if (!manifest.languages || typeof manifest.languages !== 'object') {
+      throw new Error(`Invalid dictionary manifest at ${manifestUrl}: missing "languages" section`);
+    }
+
+    const languages = Object.entries(manifest.languages);
+    if (languages.length === 0) {
+      throw new Error(`Invalid dictionary manifest at ${manifestUrl}: at least one language is required`);
+    }
+
+    for (const [languageCode, languageManifest] of languages) {
+      if (!languageManifest || typeof languageManifest !== 'object') {
+        throw new Error(`Invalid dictionary manifest at ${manifestUrl}: language "${languageCode}" must be an object`);
+      }
+
+      if (!Array.isArray(languageManifest.dictionaries)) {
+        throw new Error(`Invalid dictionary manifest at ${manifestUrl}: language "${languageCode}" must contain dictionaries array`);
+      }
+
+      for (const dictionary of languageManifest.dictionaries) {
+        if (!dictionary || typeof dictionary !== 'object') {
+          throw new Error(`Invalid dictionary manifest at ${manifestUrl}: dictionary in "${languageCode}" must be an object`);
+        }
+
+        if (!dictionary.id || !dictionary.url) {
+          throw new Error(`Invalid dictionary manifest at ${manifestUrl}: dictionary in "${languageCode}" must contain id and url`);
+        }
+      }
+    }
   }
 
   async getManifestUrl() {
@@ -360,6 +133,7 @@ class GitHubDictionaryProvider extends CrosswordProvider {
 
     console.log('🌐 Loading dictionary manifest:', manifestUrl);
     const manifest = await this.fetchJson(manifestUrl);
+    this.validateManifest(manifest, manifestUrl);
     await this.cache.set(cacheKey, { data: manifest, timestamp: now });
     return manifest;
   }
@@ -744,10 +518,6 @@ class ProviderManager {
 
   initializeDefaultProviders() {
     this.registerProvider(new GitHubDictionaryProvider());
-    this.registerProvider(new TestProvider());
-    this.registerProvider(new CrosswordNinjaProvider());
-    this.registerProvider(new WordSolverProvider());
-    this.registerProvider(new CrosswordSolverProvider());
   }
 
   registerProvider(provider) {
@@ -760,11 +530,6 @@ class ProviderManager {
 
   getAllProviders() {
     return Array.from(this.providers.values());
-  }
-
-  // Регистрация пользовательского провайдера
-  registerCustomProvider(name, endpoint) {
-    this.registerProvider(new CrosswordProvider(name, endpoint));
   }
 }
 

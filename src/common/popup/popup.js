@@ -234,43 +234,49 @@ async function initializeProviderSelect() {
     `<option value="${provider.name}">${provider.name}</option>`
   ).join('');
   
-  // Добавляем опцию для пользовательского провайдера
-  select.innerHTML += '<option value="custom">➕ Add Custom Provider</option>';
+  // Добавляем опцию для настройки источника словарей
+  select.innerHTML += '<option value="manifestConfig">⚙️ Configure Manifest Source</option>';
   
   select.addEventListener('change', (event) => {
-    if (event.target.value === 'custom') {
+    if (event.target.value === 'manifestConfig') {
       showCustomProviderDialog();
     }
   });
 }
 
-// Диалог добавления пользовательского провайдера
-function showCustomProviderDialog() {
+// Диалог настройки URL манифеста словарей
+async function showCustomProviderDialog() {
+  const settings = await chrome.storage.sync.get('dictionaryManifestUrl');
+  const currentManifestUrl = settings.dictionaryManifestUrl || '';
+
   const dialog = document.createElement('div');
   dialog.className = 'custom-provider-dialog';
   dialog.innerHTML = `
     <div class="dialog-content">
-      <h3>Add Custom Provider</h3>
+      <h3>Configure Dictionary Manifest Source</h3>
       <div>
-        <label for="providerName">Name:</label>
-        <input type="text" id="providerName" placeholder="My Provider">
+        <label for="providerManifestUrl">Manifest URL:</label>
+        <input type="text" id="providerManifestUrl" placeholder="https://raw.githubusercontent.com/<owner>/<repo>/main/manifest.json" value="${currentManifestUrl}">
       </div>
       <div>
-        <label for="providerEndpoint">Endpoint:</label>
-        <input type="text" id="providerEndpoint" placeholder="https://api.example.com/solve">
+        <small>Leave empty to use build-time/default source.</small>
       </div>
       <div class="format-info">
-        <h4>Expected Data Format:</h4>
+        <h4>Required Manifest Shape:</h4>
         <div class="format-section">
-          <h5>Request Format:</h5>
-          <pre>${providerManager.getProvider('Test API').getFormatDescription().request}</pre>
-        </div>
-        <div class="format-section">
-          <h5>Response Format:</h5>
-          <pre>${providerManager.getProvider('Test API').getFormatDescription().response}</pre>
+          <pre>{
+  "languages": {
+    "ru": {
+      "dictionaries": [
+        { "id": "items", "url": "https://.../items.txt" }
+      ]
+    }
+  }
+}</pre>
         </div>
       </div>
       <div class="dialog-buttons">
+        <button id="resetProvider">Reset</button>
         <button id="cancelProvider">Cancel</button>
         <button id="saveProvider">Save</button>
       </div>
@@ -338,19 +344,25 @@ function showCustomProviderDialog() {
     document.getElementById('serviceSelect').value = providerManager.getAllProviders()[0].name;
     dialog.remove();
   });
+
+  document.getElementById('resetProvider').addEventListener('click', async () => {
+    await chrome.storage.sync.remove('dictionaryManifestUrl');
+    await cache.clearCache();
+    document.getElementById('serviceSelect').value = providerManager.getAllProviders()[0].name;
+    dialog.remove();
+  });
   
-  document.getElementById('saveProvider').addEventListener('click', () => {
-    const name = document.getElementById('providerName').value.trim();
-    const endpoint = document.getElementById('providerEndpoint').value.trim();
+  document.getElementById('saveProvider').addEventListener('click', async () => {
+    const manifestUrl = document.getElementById('providerManifestUrl').value.trim();
     
-    if (!name || !endpoint) {
-      alert('Please fill in both name and endpoint');
+    if (manifestUrl && !/^https:\/\//i.test(manifestUrl)) {
+      alert('Manifest URL must start with https://');
       return;
     }
     
-    providerManager.registerCustomProvider(name, endpoint);
-    initializeProviderSelect();
-    document.getElementById('serviceSelect').value = name;
+    await chrome.storage.sync.set({ dictionaryManifestUrl: manifestUrl });
+    await cache.clearCache();
+    document.getElementById('serviceSelect').value = providerManager.getAllProviders()[0].name;
     dialog.remove();
   });
 }

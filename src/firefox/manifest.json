@@ -9,7 +9,6 @@
     "scripting"
   ],
   "host_permissions": [
-    "https://crossword.sanuch.name/*",
     "https://raw.githubusercontent.com/*"
   ],
   "icons": {
