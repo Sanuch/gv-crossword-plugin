@@ -176,6 +176,11 @@ class GitHubDictionaryProvider {
     return this.normalizeText(value).replace(/[\-–—]/g, ' ');
   }
 
+  normalizeForDisplay(value) {
+    // Для UI и итоговых ответов сохраняем дефис как дефис.
+    return this.normalizeText(value).replace(/[–—]/g, '-');
+  }
+
   selectDictionaries(languageManifest, clue) {
     const normalizedClue = this.normalizeText(clue);
     const dictionaries = languageManifest.dictionaries || [];
@@ -206,7 +211,7 @@ class GitHubDictionaryProvider {
   }
 
   formatAnswer(value) {
-    return this.normalizeForMatch(value).toLocaleUpperCase();
+    return this.normalizeForDisplay(value).toLocaleUpperCase();
   }
 
   async findCandidates(word, dictionaries, dictionaryWordCache) {

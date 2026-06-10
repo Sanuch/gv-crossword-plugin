@@ -396,10 +396,15 @@ function fillCrossword(id, apiResponse) {
         console.log(`⚠️ Cell [${row}, ${col}] is not active`);
         continue;
       }
+
+      const isKnownCell = cell.element.classList.contains('known');
+      if (isKnownCell) {
+        console.log(`⏭️ Cell [${row}, ${col}] is known, skipping`);
+        continue;
+      }
       
-      // Находим input поле в ячейке (поддерживаем видимые текстовые и скрытые known)
+      // Находим редактируемое input поле в ячейке
       const textInput = cell.element.querySelector('.sym');
-      const hiddenInput = cell.element.querySelector('input[type="hidden"]');
 
       if (textInput) {
         const oldValue = textInput.value;
@@ -409,34 +414,8 @@ function fillCrossword(id, apiResponse) {
         textInput.dispatchEvent(new Event('input', { bubbles: true }));
         textInput.dispatchEvent(new Event('keyup', { bubbles: true }));
         textInput.dispatchEvent(new Event('change', { bubbles: true }));
-      } else if (hiddenInput) {
-        const oldValue = hiddenInput.value;
-        hiddenInput.value = answer[i].toUpperCase();
-        // Обновляем видимый .open внутри .c_wrap, если он есть
-        const wrap = hiddenInput.closest('.c_wrap');
-        if (wrap) {
-          let openDiv = wrap.querySelector('.open');
-          if (!openDiv) {
-            openDiv = document.createElement('div');
-            openDiv.className = 'open';
-            openDiv.setAttribute('role', 'option');
-            wrap.insertBefore(openDiv, hiddenInput);
-          }
-          openDiv.textContent = answer[i].toUpperCase();
-          // Обновляем aria-label аккуратно
-          const prevAria = openDiv.getAttribute('aria-label') || '';
-          // если в aria-label уже есть '-', заменим последнюю букву, иначе добавим
-          if (prevAria.includes('-')) {
-            const parts = prevAria.split('-');
-            parts[parts.length - 1] = ' ' + answer[i].toUpperCase();
-            openDiv.setAttribute('aria-label', parts.join('-'));
-          } else {
-            openDiv.setAttribute('aria-label', prevAria + ' - ' + answer[i].toUpperCase());
-          }
-        }
-        console.log(`✅ Cell [${row}, ${col}] (hidden): "${oldValue}" → "${answer[i].toUpperCase()}"`);
       } else {
-        console.log(`⚠️ No input element found in cell [${row}, ${col}]`);
+        console.log(`⚠️ No editable input element found in cell [${row}, ${col}]`);
       }
     }
   });
